@@ -5,6 +5,7 @@ from .serializers import UserLoginSerializer
 from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.authtoken.models import Token
+from django.contrib.auth.hashers import make_password
 
 
 # user authentication
@@ -20,7 +21,7 @@ def login(request):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            return Response({"error": "email"})
+            return Response({"response": "email"})
 
         # authenticate user
         user = authenticate(request, email=email, password=password)
@@ -37,15 +38,37 @@ def login(request):
             }
             return Response(response, status=status.HTTP_200_OK)
         else:
-            return Response({"error": "password"})
+            return Response({"response": "password"})
 
     # unknown error
-    return Response({"error": "error"})
+    return Response({"response": "error"})
 
 
 @api_view(["POST"])
 def register(request):
-    return Response()
+    serializer = UserLoginSerializer(data=request.data)
+    if serializer.is_valid():
+        # get email and password
+        email = serializer.validated_data["email"]
+        name = serializer.validated_data.get("name", "")
+        password = serializer.validated_data["password"]
+        registrationType = serializer.validated_data.get("registrationType", "")
+
+        if User.objects.filter(email=email).exists():
+            return Response({"response": "email"})
+
+        newUser = User(
+            email=email,
+            password=make_password(password),
+            name=name,
+            registrationType=registrationType,
+        )
+        newUser.save()
+
+        return Response({"response": "success"})
+
+    # unknown error
+    return Response({"response": "error"})
 
 
 @api_view(["POST"])
