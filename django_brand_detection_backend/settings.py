@@ -11,7 +11,12 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
-from secret import SECRET_EMAIL, SECRET_EMAIL_PASSWORD
+from secret import (
+    SECRET_EMAIL,
+    SECRET_EMAIL_PASSWORD,
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -140,6 +145,11 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = SECRET_EMAIL
 EMAIL_HOST_PASSWORD = SECRET_EMAIL_PASSWORD
+
+# for google login
+BASE_FRONTEND_URL = "http://localhost:8000"
+GOOGLE_OAUTH2_CLIENT_ID = GOOGLE_CLIENT_ID
+GOOGLE_OAUTH2_CLIENT_SECRET = GOOGLE_CLIENT_SECRET
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

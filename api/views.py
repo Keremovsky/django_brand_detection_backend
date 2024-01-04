@@ -8,6 +8,8 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import make_password
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 from .serializers import (
     UserSerializer,
     PasswordResetRequestSerializer,
@@ -15,6 +17,8 @@ from .serializers import (
 )
 from .tokens import password_reset_token_generator
 from .models import User
+from .utils import createUser
+from secret import GOOGLE_CLIENT_ID
 
 
 # user authentication
@@ -24,20 +28,51 @@ def login(request):
 
     # if taken data is valid
     if serializer.is_valid():
-        # get email and password
-        email = serializer.validated_data["email"]
-        password = serializer.validated_data["password"]
+        # control if user is registered by google or email
+        registrationType = serializer.validated_data.get("registrationType", "")
+        if registrationType == "google":
+            token = serializer.validated_data["password"]
 
-        # control if there is a user with given email
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return Response({"response": "email"})
+            # control if token is correct
+            try:
+                # get user information from google cloud
+                id_info = id_token.verify_oauth2_token(
+                    token, google_requests.Request(), GOOGLE_CLIENT_ID
+                )
+                email = id_info["email"]
+
+                # control if there is a user with given email, if not create
+                if User.objects.filter(email=email).exists():
+                    user = User.objects.get(email=email)
+
+                    # if user already registered with email
+                    if user.registrationType == "email":
+                        return Response({"response": "already_email"})
+                else:
+                    # create user and save it to the database
+                    createUser(email, token, id_info["name"], registrationType)
+            except:
+                return Response({"response": "token"})
+        else:
+            # get email and password
+            email = serializer.validated_data.get("email", "")
+            password = serializer.validated_data["password"]
+
+            # control if there is a user with given email
+            try:
+                user = User.objects.get(email=email)
+
+                # if user already registered with google
+                if user.registrationType == "google":
+                    return Response({"response": "already_google"})
+
+            except User.DoesNotExist:
+                return Response({"response": "email"})
 
         # authenticate user
         user = authenticate(request, email=email, password=password)
 
-        # control if password is correct
+        # control if user authenticated
         if user:
             token, created = Token.objects.get_or_create(user=user)
             response = {
@@ -71,15 +106,9 @@ def register(request):
             return Response({"response": "email"})
 
         # create user and save it to the database
-        newUser = User(
-            email=email,
-            password=make_password(password),
-            name=name,
-            registrationType=registrationType,
-        )
-        newUser.save()
+        createUser(email, password, name, registrationType)
 
-        return Response({"response": "success"})
+        return Response({"response": "success"}, status=status.HTTP_200_OK)
 
     # unknown error
     return Response({"response": "error"})
@@ -115,7 +144,7 @@ def resetPasswordRequest(request):
             fail_silently=False,
         )
 
-        return Response({"response": str(user.id)})
+        return Response({"response": str(user.id)}, status=status.HTTP_200_OK)
 
     # unknown error
     return Response({"response": "error"})
@@ -140,7 +169,7 @@ def resetPasswordConfirm(request, uidb64, token):
             user.password = make_password(password)
             user.save()
 
-            return Response({"response": "success"})
+            return Response({"response": "success"}, status=status.HTTP_200_OK)
         else:
             return Response({"response": "token"})
 
