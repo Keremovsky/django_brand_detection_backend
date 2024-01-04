@@ -1,17 +1,49 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
-from django.utils import timezone
+from django.contrib.auth.models import BaseUserManager, AbstractUser
 import json
+
+
+# custom manager for user
+class UserManager(BaseUserManager):
+    use_in_migrations = True
+
+    def _create_user(self, email, password, **extra_fields):
+        if not email:
+            raise ValueError("The given email must be set")
+        if not password:
+            raise ValueError("The given password must be set")
+
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_user(self, email, password=None, **extra_fields):
+        extra_fields.setdefault("is_superuser", False)
+        return self._create_user(email, password, **extra_fields)
+
+    def create_superuser(self, email, password, **extra_fields):
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_staff", True)
+
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
+
+        return self._create_user(email, password, **extra_fields)
 
 
 # model for user data
 class User(AbstractUser):
+    username = None
     name = models.CharField(max_length=50, null=True)
     email = models.EmailField(unique=True)
     registrationType = models.CharField(max_length=10, null=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
+
+    objects = UserManager()
 
 
 # model that hold old searches made by user

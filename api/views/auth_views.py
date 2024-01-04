@@ -17,7 +17,7 @@ from ..serializers import (
 )
 from ..tokens import password_reset_token_generator
 from ..models import User
-from ..utils import createUser, createFeedback
+from ..utils import createUser
 from secret import GOOGLE_CLIENT_ID
 
 
@@ -31,13 +31,13 @@ def login(request):
         # control if user is registered by google or email
         registrationType = serializer.validated_data.get("registrationType", "")
         if registrationType == "google":
-            token = serializer.validated_data["password"]
+            password = serializer.validated_data["password"]
 
             # control if token is correct
             try:
                 # get user information from google cloud
                 id_info = id_token.verify_oauth2_token(
-                    token, google_requests.Request(), GOOGLE_CLIENT_ID
+                    password, google_requests.Request(), GOOGLE_CLIENT_ID
                 )
                 email = id_info["email"]
 
@@ -50,8 +50,8 @@ def login(request):
                         return Response({"response": "already_email"})
                 else:
                     # create user and save it to the database
-                    createUser(email, token, id_info["name"], registrationType)
-            except:
+                    createUser(email, password, id_info["name"], registrationType)
+            except Exception as e:
                 return Response({"response": "token"})
         else:
             # get email and password
@@ -75,12 +75,12 @@ def login(request):
 
         # control if user authenticated
         if user:
-            token, created = Token.objects.get_or_create(user=user)
+            password, created = Token.objects.get_or_create(user=user)
             response = {
                 "id": user.id,
                 "email": user.email,
                 "name": user.name,
-                "token": token.key,
+                "token": password.key,
                 "registrationType": user.registrationType,
             }
             return Response(response, status=status.HTTP_200_OK)

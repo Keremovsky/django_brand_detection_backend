@@ -3,9 +3,11 @@ from .models import User, RequestModel, FeedbackModel
 
 
 class UserSerializer(serializers.Serializer):
-    class Meta:
-        model = User
-        fields = "__all__"
+    id = serializers.IntegerField(read_only=True)
+    email = serializers.EmailField(required=False)
+    password = serializers.CharField(write_only=True)
+    name = serializers.CharField(read_only=True)
+    registrationType = serializers.CharField(write_only=True)
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):
