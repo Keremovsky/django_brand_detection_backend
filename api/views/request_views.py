@@ -24,3 +24,25 @@ def createRequest(request, id):
 
     # unknown error
     return Response({"response": "error"})
+
+
+@api_view(["GET"])
+def getAllRequest(request, id):
+    try:
+        # get user's requests
+        user = User.objects.get(id=id)
+        requests = RequestModel.objects.filter(user=user)
+
+        if not requests.exists():
+            # if there is no request with given id
+            return Response({"response": "no_request"})
+
+        serializer = RequestSerializer(requests, many=True)
+
+        return Response(serializer.data)
+    except User.DoesNotExist:
+        # if there is no user with given id
+        return Response({"response": "no_user"})
+    except:
+        # unknown error
+        return Response({"response": "error"})

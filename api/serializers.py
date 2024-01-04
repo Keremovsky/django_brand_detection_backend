@@ -24,4 +24,4 @@ class FeedbackSerializer(serializers.Serializer):
 class RequestSerializer(serializers.Serializer):
     class Meta:
         model = RequestModel
-        exclude = ["id", "user", "date"]
+        fields = "__all__"
