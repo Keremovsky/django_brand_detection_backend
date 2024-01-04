@@ -10,14 +10,14 @@ from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
-from .serializers import (
+from ..serializers import (
     UserSerializer,
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer,
 )
-from .tokens import password_reset_token_generator
-from .models import User
-from .utils import createUser
+from ..tokens import password_reset_token_generator
+from ..models import User
+from ..utils import createUser, createFeedback
 from secret import GOOGLE_CLIENT_ID
 
 
@@ -67,7 +67,8 @@ def login(request):
                     return Response({"response": "already_google"})
 
             except User.DoesNotExist:
-                return Response({"response": "email"})
+                # if there is no user with given id
+                return Response({"response": "no_user"})
 
         # authenticate user
         user = authenticate(request, email=email, password=password)
@@ -161,6 +162,7 @@ def resetPasswordConfirm(request, uidb64, token):
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(id=uid)
         except (ValueError, OverflowError, User.DoesNotExist):
+            # if there is no user with given id
             return Response({"response": "no_user"})
 
         # control if token is correct, if it is reset password

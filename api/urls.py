@@ -1,12 +1,15 @@
 from django.urls import path
-from . import views
+from .views import auth_views, feedback_views
 
 urlpatterns = [
-    path("login/", views.login),
-    path("register/", views.register),
-    path("reset-password-request/", views.resetPasswordRequest),
+    # authentication views
+    path("login/", auth_views.login),
+    path("register/", auth_views.register),
+    path("reset-password-request/", auth_views.resetPasswordRequest),
     path(
         "reset-password-confirm/<str:uidb64>/<str:token>/",
-        views.resetPasswordConfirm,
+        auth_views.resetPasswordConfirm,
     ),
+    # feedback views
+    path("create-feedback/<str:id>/", feedback_views.createFeedback),
 ]

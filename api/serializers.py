@@ -16,3 +16,8 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
+
+
+class FeedbackSerializer(serializers.Serializer):
+    historyId = serializers.IntegerField(read_only=True)
+    description = serializers.CharField(read_only=True)
