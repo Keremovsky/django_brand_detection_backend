@@ -12,4 +12,7 @@ urlpatterns = [
     ),
     # feedback views
     path("create-feedback/<str:id>/", feedback_views.createFeedback),
+    path("get-all-feedback/<str:id>/", feedback_views.getAllFeedback),
+    # request views
+    # search views
 ]

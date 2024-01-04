@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 import json
 
 
@@ -16,6 +17,7 @@ class User(AbstractUser):
 # model that hold old searches made by user
 class HistoryModel(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
     image = models.ImageField(upload_to="history/")
     resultIds = models.CharField(max_length=200)
     isSaved = models.BooleanField()
@@ -31,6 +33,7 @@ class HistoryModel(models.Model):
 # model that hold data for requests made by user
 class RequestModel(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
     image = models.ImageField(upload_to="request/")
     companyName = models.CharField(max_length=50)
     fileName = models.CharField(max_length=50)
@@ -44,4 +47,5 @@ class RequestModel(models.Model):
 class FeedbackModel(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     history = models.ForeignKey(HistoryModel, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
     description = models.CharField(max_length=250)
