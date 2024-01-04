@@ -1,13 +1,11 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, RequestModel, FeedbackModel
 
 
 class UserSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    email = serializers.EmailField(required=False)
-    password = serializers.CharField(write_only=True)
-    name = serializers.CharField(read_only=True)
-    registrationType = serializers.CharField(write_only=True)
+    class Meta:
+        model = User
+        fields = "__all__"
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):
@@ -21,3 +19,9 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 class FeedbackSerializer(serializers.Serializer):
     historyId = serializers.IntegerField(read_only=True)
     description = serializers.CharField(read_only=True)
+
+
+class RequestSerializer(serializers.Serializer):
+    class Meta:
+        model = RequestModel
+        exclude = ["id", "user", "date"]

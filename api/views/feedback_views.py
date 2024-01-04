@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from ..models import User, HistoryModel, FeedbackModel
 from ..serializers import FeedbackSerializer
+from ..utils import saveFeedback
 
 
 @api_view(["POST"])
@@ -19,7 +20,7 @@ def createFeedback(request, id):
             history = HistoryModel.objects.get(id=historyId)
 
             # create feedback and save it to the database
-            createFeedback(user, history, description)
+            saveFeedback(user, history, description)
 
             return Response({"response": "success"}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
