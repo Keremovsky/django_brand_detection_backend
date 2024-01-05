@@ -31,13 +31,13 @@ def login(request):
         # control if user is registered by google or email
         registrationType = serializer.validated_data.get("registrationType", "")
         if registrationType == "google":
-            password = serializer.validated_data["password"]
+            token = serializer.validated_data["password"]
 
             # control if token is correct
             try:
                 # get user information from google
                 id_info = id_token.verify_oauth2_token(
-                    password, google_requests.Request(), GOOGLE_CLIENT_ID
+                    token, google_requests.Request(), GOOGLE_CLIENT_ID
                 )
                 email = id_info["email"]
 
@@ -48,9 +48,18 @@ def login(request):
                     # if user already registered with email
                     if user.registrationType == "email":
                         return Response({"response": "already_email"})
+
+                    response = {
+                        "id": user.id,
+                        "email": email,
+                        "name": user.name,
+                        "token": "",
+                        "registrationType": user.registrationType,
+                    }
+                    return Response(response, status=status.HTTP_200_OK)
                 else:
                     # create user and save it to the database
-                    saveUser(email, password, id_info["name"], registrationType)
+                    saveUser(email, "", id_info["name"], registrationType)
             except:
                 return Response({"response": "token"})
         else:

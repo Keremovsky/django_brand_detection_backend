@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractUser
-import json
+import json, os
 
 
 # custom manager for user
@@ -52,7 +52,7 @@ class HistoryModel(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     image = models.ImageField(upload_to="history/")
     resultIds = models.CharField(max_length=200)
-    isSaved = models.BooleanField()
+    isSaved = models.BooleanField(default=False)
 
     # functions for store and get result ids
     def setResultsIds(self, ids):
