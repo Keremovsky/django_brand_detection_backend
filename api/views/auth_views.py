@@ -35,7 +35,7 @@ def login(request):
 
             # control if token is correct
             try:
-                # get user information from google cloud
+                # get user information from google
                 id_info = id_token.verify_oauth2_token(
                     password, google_requests.Request(), GOOGLE_CLIENT_ID
                 )
@@ -51,7 +51,7 @@ def login(request):
                 else:
                     # create user and save it to the database
                     saveUser(email, password, id_info["name"], registrationType)
-            except Exception as e:
+            except:
                 return Response({"response": "token"})
         else:
             # get email and password
@@ -62,8 +62,8 @@ def login(request):
             try:
                 user = User.objects.get(email=email)
 
-                # if user already registered with google
                 if user.registrationType == "google":
+                    # if user already registered with google
                     return Response({"response": "already_google"})
 
             except User.DoesNotExist:
@@ -74,20 +74,21 @@ def login(request):
                 return Response({"response": "error"})
 
         # authenticate user
-        user = authenticate(request, email=email, password=password)
+        authUser = authenticate(request, email=email, password=password)
 
         # control if user authenticated
-        if user:
+        if authUser:
             password, created = Token.objects.get_or_create(user=user)
             response = {
-                "id": user.id,
-                "email": user.email,
-                "name": user.name,
+                "id": authUser.id,
+                "email": authUser.email,
+                "name": authUser.name,
                 "token": password.key,
-                "registrationType": user.registrationType,
+                "registrationType": authUser.registrationType,
             }
             return Response(response, status=status.HTTP_200_OK)
         else:
+            # if user's password is false
             return Response({"response": "password"})
 
     # unknown error
@@ -107,6 +108,7 @@ def register(request):
         registrationType = serializer.validated_data.get("registrationType", "")
 
         if User.objects.filter(email=email).exists():
+            # if there is an user with given email
             return Response({"response": "email"})
 
         # create user and save it to the database
@@ -130,7 +132,8 @@ def resetPasswordRequest(request):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            return Response({"response": "email"})
+            # if there is no user with given id
+            return Response({"response": "no_user"})
         except:
             # unknown error
             return Response({"response": "error"})

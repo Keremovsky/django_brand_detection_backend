@@ -27,7 +27,6 @@ class RequestSerializer(serializers.Serializer):
     class Meta:
         model = RequestModel
         fields = "__all__"
-        exclude = ["user", "date"]
 
 
 class HistoryIdSerializer(serializers.Serializer):
