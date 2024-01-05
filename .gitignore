@@ -139,3 +139,4 @@ GitHub.sublime-settings
 
 # custom files
 secret.py
+blip_image_embeddings/model_large_retrieval_coco.pth

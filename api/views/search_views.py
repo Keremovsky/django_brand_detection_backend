@@ -3,11 +3,12 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 from rest_framework import status
 import base64
+from blip_image_embeddings.pipeline import PreTrainedPipeline
 from ..models import User
 from ..utils import saveHistory
 
 # client = QdrantClient()
-# model = PreTrainedPipeline(path=MODEL_FOLDER_PATH)
+# model = PreTrainedPipeline(path="blip_image_embeddings/")
 
 
 @api_view(["POST"])
@@ -18,10 +19,12 @@ def search(request, id):
         if image:
             imageContent = image.read()
 
-            # search for image
+            # embed image and get vector
             # b64Image = base64.b64encode(imageContent).decode("utf-8")
             # result = model.__call__(data={"inputs": b64Image})
             # vector = result["feature_vector"]
+            # print(vector)
+            # search for image
             # client.search(vector)
 
             # control if user is authenticated
