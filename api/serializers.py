@@ -23,10 +23,10 @@ class FeedbackSerializer(serializers.Serializer):
     description = serializers.CharField(read_only=True)
 
 
-class RequestSerializer(serializers.Serializer):
+class RequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = RequestModel
-        fields = "__all__"
+        exclude = ["user", "date"]
 
 
 class HistoryIdSerializer(serializers.Serializer):

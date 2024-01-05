@@ -1,12 +1,14 @@
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
 from ..models import User, RequestModel
 from ..serializers import RequestSerializer
 from ..utils import saveRequest
 
 
 @api_view(["POST"])
+@parser_classes([MultiPartParser, FormParser])
 def createRequest(request, id):
     serializer = RequestSerializer(data=request.data)
 
@@ -24,6 +26,8 @@ def createRequest(request, id):
         except:
             # unknown error
             return Response({"response": "error"})
+    else:
+        print(serializer.errors)
 
     # unknown error
     return Response({"response": "error"})
@@ -37,12 +41,12 @@ def getAllRequest(request, id):
         requests = RequestModel.objects.filter(user=user)
 
         if not requests.exists():
-            # if there is no request with given id
+            # if there is no request for given user
             return Response({"response": "no_request"})
 
         serializer = RequestSerializer(requests, many=True)
 
-        return Response(serializer.data)
+        return Response({"requests": serializer.data})
     except User.DoesNotExist:
         # if there is no user with given id
         return Response({"response": "no_user"})

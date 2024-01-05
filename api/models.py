@@ -68,7 +68,6 @@ class RequestModel(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     image = models.ImageField(upload_to="request/")
     companyName = models.CharField(max_length=50)
-    fileName = models.CharField(max_length=50)
     description = models.TextField()
     country = models.CharField(max_length=50)
     website = models.CharField(max_length=100)

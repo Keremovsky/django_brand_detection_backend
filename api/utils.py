@@ -1,3 +1,6 @@
+from sqlite3 import IntegrityError
+
+from django.forms import ValidationError
 from api.models import User, HistoryModel, FeedbackModel, RequestModel
 from django.contrib.auth.hashers import make_password
 from django.core.files.base import ContentFile
@@ -18,8 +21,8 @@ def saveFeedback(user: User, history: HistoryModel, description: str):
     newFeedback.save()
 
 
-def saveRequest(user: User, request: RequestModel):
-    newRequest = RequestModel(user=user, **request.__dict__)
+def saveRequest(user: User, requestModel: RequestModel):
+    newRequest = RequestModel(user=user, **requestModel)
     newRequest.save()
 
 
