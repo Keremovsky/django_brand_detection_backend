@@ -29,6 +29,9 @@ def createFeedback(request, id):
         except HistoryModel.DoesNotExist:
             # if there is no history item with given id
             return Response({"response": "no_history"})
+        except:
+            # unknown error
+            return Response({"response": "error"})
 
     # unknown error
     return Response({"response": "error"})

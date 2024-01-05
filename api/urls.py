@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import auth_views, feedback_views, request_views
+from .views import auth_views, feedback_views, request_views, history_views
 
 urlpatterns = [
     # authentication views
@@ -16,5 +16,7 @@ urlpatterns = [
     # request views
     path("create-request/<str:id>/", request_views.createRequest),
     path("get-all-request/<str:id>/", request_views.getAllRequest),
+    # history views
+    path("delete-history/<str:id>/", history_views.deleteHistory),
     # search views
 ]

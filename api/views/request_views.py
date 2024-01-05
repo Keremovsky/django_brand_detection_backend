@@ -21,6 +21,9 @@ def createRequest(request, id):
             return Response({"response": "success"}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({"response": "no_user"})
+        except:
+            # unknown error
+            return Response({"response": "error"})
 
     # unknown error
     return Response({"response": "error"})

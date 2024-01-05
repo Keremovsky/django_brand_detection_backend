@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, RequestModel, FeedbackModel
+from .models import RequestModel, HistoryModel
 
 
 class UserSerializer(serializers.Serializer):
@@ -27,3 +27,8 @@ class RequestSerializer(serializers.Serializer):
     class Meta:
         model = RequestModel
         fields = "__all__"
+        exclude = ["user", "date"]
+
+
+class HistoryIdSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)

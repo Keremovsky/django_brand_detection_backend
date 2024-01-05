@@ -17,7 +17,7 @@ from ..serializers import (
 )
 from ..tokens import password_reset_token_generator
 from ..models import User
-from ..utils import createUser
+from ..utils import saveUser
 from secret import GOOGLE_CLIENT_ID
 
 
@@ -50,7 +50,7 @@ def login(request):
                         return Response({"response": "already_email"})
                 else:
                     # create user and save it to the database
-                    createUser(email, password, id_info["name"], registrationType)
+                    saveUser(email, password, id_info["name"], registrationType)
             except Exception as e:
                 return Response({"response": "token"})
         else:
@@ -69,6 +69,9 @@ def login(request):
             except User.DoesNotExist:
                 # if there is no user with given id
                 return Response({"response": "no_user"})
+            except:
+                # unknown error
+                return Response({"response": "error"})
 
         # authenticate user
         user = authenticate(request, email=email, password=password)
@@ -107,7 +110,7 @@ def register(request):
             return Response({"response": "email"})
 
         # create user and save it to the database
-        createUser(email, password, name, registrationType)
+        saveUser(email, password, name, registrationType)
 
         return Response({"response": "success"}, status=status.HTTP_200_OK)
 
@@ -128,6 +131,9 @@ def resetPasswordRequest(request):
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             return Response({"response": "email"})
+        except:
+            # unknown error
+            return Response({"response": "error"})
 
         # create a token for password reset
         token = password_reset_token_generator.make_token(user)
@@ -161,9 +167,12 @@ def resetPasswordConfirm(request, uidb64, token):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(id=uid)
-        except (ValueError, OverflowError, User.DoesNotExist):
+        except User.DoesNotExist:
             # if there is no user with given id
             return Response({"response": "no_user"})
+        except:
+            # unknown error
+            return Response({"response": "error"})
 
         # control if token is correct, if it is reset password
         if password_reset_token_generator.check_token(user, token):
