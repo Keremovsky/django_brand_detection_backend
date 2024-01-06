@@ -1,6 +1,8 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.conf import settings
+from django.core.mail import send_mail
 from ..models import User, HistoryModel, FeedbackModel
 from ..serializers import FeedbackSerializer
 from ..utils import saveFeedback
@@ -22,6 +24,18 @@ def createFeedback(request, id):
             # create feedback and save it to the database
             saveFeedback(user, history, description)
 
+            # send mail to user email to notify user
+            title = "Geri Bildirim"
+            message = "Geri bildiriminiz tarafımıza ulaştırıldı, en yakın zamanda incelenerek işleme alınacaktır."
+            from_email = settings.EMAIL_HOST_USER
+            sent_to = [user.email]
+            send_mail(
+                title,
+                message,
+                from_email,
+                sent_to,
+                fail_silently=False,
+            )
             return Response({"response": "success"}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             # if there is no user with given id
