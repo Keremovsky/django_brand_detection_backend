@@ -35,7 +35,12 @@ def search(request, id):
                 # control if user is authenticated
                 try:
                     user = User.objects.get(id=id)
-                    saveHistory(user, imageContent, [data["id"] for data in results[1]])
+                    saveHistory(
+                        user,
+                        imageContent,
+                        [data["id"] for data in results[1]],
+                        [data["similarity"] for data in results[1]],
+                    )
                 except User.DoesNotExist:
                     pass
 

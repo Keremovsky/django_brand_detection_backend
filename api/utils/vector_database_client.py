@@ -4,15 +4,15 @@ from qdrant_client.http.models import (
     Distance,
     VectorParams,
     PointStruct,
-    SearchRequest,
     ScalarQuantization,
     ScalarQuantizationConfig,
     ScalarType,
     ScoredPoint,
+    Record,
 )
 
 
-def formatData(points: List[ScoredPoint]):
+def formatScoredPoint(points: List[ScoredPoint]):
     formattedData = []
     for point in points:
         data = {
@@ -25,6 +25,23 @@ def formatData(points: List[ScoredPoint]):
             "image": f"/media/logo/{point.payload['file_name']}",
             "similarity": ((point.score + 1) * 50),
         }
+        formattedData.append(data)
+    return formattedData
+
+
+def formatRecord(records: List[Record]):
+    formattedData = []
+    for record in records:
+        data = {
+            "id": record.id,
+            "name": record.payload["name"],
+            "location": record.payload["location"],
+            "description": record.payload["description"],
+            "web": record.payload["url"],
+            "twitter": record.payload["twitter_url"],
+            "image": f"/media/logo/{record.payload['file_name']}",
+        }
+
         formattedData.append(data)
     return formattedData
 
@@ -75,11 +92,15 @@ class VectorDatabaseClient:
     # get all payload data of given ids
     def getVectorsWithId(self, ids: List[int]):
         try:
-            result = self.client.retrieve(
-                collection_name=self.collection_name,
-                ids=ids,
-            )
-            data = formatData(result)
+            result = []
+            for i in range(len(ids)):
+                vectorData = self.client.retrieve(
+                    collection_name=self.collection_name,
+                    ids=[ids[i]],
+                )
+                result.append(vectorData[0])
+
+            data = formatRecord(result)
             return True, data
         except Exception as e:
             return False, str(e)
@@ -92,7 +113,7 @@ class VectorDatabaseClient:
                 query_vector=vector,
                 limit=limit,
             )
-            data = formatData(result)
+            data = formatScoredPoint(result)
             return True, data
         except Exception as e:
             print(e)

@@ -25,13 +25,14 @@ def saveRequest(user: User, requestModel: RequestModel):
     newRequest.save()
 
 
-def saveHistory(user: User, imageBytes: bytes, resultIds):
+def saveHistory(user: User, imageBytes: bytes, resultIds, similarities):
     newHistory = HistoryModel(user=user)
 
     image = ContentFile(imageBytes)
     newHistory.image.save("test.png", image)
 
     newHistory.setResultsIds(resultIds)
+    newHistory.setSimilarities(similarities)
 
     newHistory.save()
 

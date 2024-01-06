@@ -52,6 +52,7 @@ class HistoryModel(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     image = models.ImageField(upload_to="history/")
     resultIds = models.CharField(max_length=200)
+    similarities = models.CharField(max_length=200)
     isSaved = models.BooleanField(default=False)
 
     # functions for store and get result ids
@@ -60,6 +61,13 @@ class HistoryModel(models.Model):
 
     def getResultIds(self):
         return json.loads(self.resultIds)
+
+    # functions for store and get similarities
+    def setSimilarities(self, sims):
+        self.similarities = json.dumps(sims)
+
+    def getSimilarities(self):
+        return json.loads(self.similarities)
 
 
 # model that hold data for requests made by user

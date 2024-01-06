@@ -14,7 +14,7 @@ def createFeedback(request, id):
 
     # if taken data is valid
     if serializer.is_valid():
-        historyId = serializer.validated_data["historyId"]
+        historyId = int(serializer.validated_data["historyId"])
         description = serializer.validated_data["description"]
 
         try:

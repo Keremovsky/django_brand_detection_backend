@@ -3,8 +3,14 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from ..serializers import HistoryIdSerializer, HistorySerializer
 from ..models import User, HistoryModel
+from ..utils.vector_database_client import VectorDatabaseClient
 
-client = QdrantClient("localhost", port=6333)
+# initialize client
+client = VectorDatabaseClient(
+    collectionName="brand_collection",
+    size=1024,
+    alwaysRam=False,
+)
 
 
 @api_view(["GET"])
@@ -13,24 +19,37 @@ def getAllHistory(request, id):
         user = User.objects.get(id=id)
         allHistory = HistoryModel.objects.filter(user=user)
 
-        # control if user that request delete is the user that owns history item
-        if allHistory.user != user:
-            return Response({"response": "no_access"})
-
+        histories = []
+        # iterate all histories
         for history in allHistory:
+            # get result ids and get company data from qdrant
             resultIds = history.getResultIds()
-            results = client.retrieve(collection_name="brand_collection", ids=resultIds)
-            print(results)
-            pass
+            results = client.getVectorsWithId(ids=resultIds)
+            # if process was success
+            if results[0] == True:
+                # get similarities from sqlite
+                similarities = history.getSimilarities()
+                # iterate taken data from qdrant and add other needed data
+                i = 0
+                for res in results[1]:
+                    res["id"] = history.pk
+                    res["date"] = history.date
+                    res["searchedImage"] = history.image.url
+                    res["isSaved"] = history.isSaved
+                    res["similarity"] = similarities[i]
+                    i += 1
+                histories.append(results[1])
+            else:
+                return Response({"response": "history_error"})
 
-        return Response({"histories": "success"})
+        return Response({"histories": histories})
     except User.DoesNotExist:
         # if there is no user with given id
         return Response({"response": "no_user"})
     except HistoryModel.DoesNotExist:
         # if there is no history item with given id
         return Response({"response": "no_history"})
-    except:
+    except Exception as e:
         # unknown error
         return Response({"response": "error"})
 

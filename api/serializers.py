@@ -22,8 +22,8 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
 # serializers for feedback and request
 class FeedbackSerializer(serializers.Serializer):
-    historyId = serializers.IntegerField(read_only=True)
-    description = serializers.CharField(read_only=True)
+    historyId = serializers.CharField()
+    description = serializers.CharField()
 
 
 class RequestSerializer(serializers.ModelSerializer):
