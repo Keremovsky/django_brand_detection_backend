@@ -10,6 +10,7 @@ from .views import (
 urlpatterns = [
     # authentication views
     path("login/", auth_views.login),
+    path("sign-in-with-google/", auth_views.signInWithGoogle),
     path("register/", auth_views.register),
     path("reset-password-request/", auth_views.resetPasswordRequest),
     path(

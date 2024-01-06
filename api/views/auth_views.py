@@ -28,59 +28,24 @@ def login(request):
 
     # if taken data is valid
     if serializer.is_valid():
-        # control if user is registered by google or email
-        registrationType = serializer.validated_data.get("registrationType", "")
-        if registrationType == "google":
-            token = serializer.validated_data["password"]
+        # get email and password
+        email = serializer.validated_data.get("email", "")
+        password = serializer.validated_data["password"]
 
-            # control if token is correct
-            try:
-                # get user information from google
-                id_info = id_token.verify_oauth2_token(
-                    token, google_requests.Request(), GOOGLE_CLIENT_ID
-                )
-                email = id_info["email"]
+        # control if there is a user with given email
+        try:
+            user = User.objects.get(email=email)
 
-                # control if there is a user with given email, if not create
-                if User.objects.filter(email=email).exists():
-                    user = User.objects.get(email=email)
+            if user.registrationType == "google":
+                # if user already registered with google
+                return Response({"response": "already_google"})
 
-                    # if user already registered with email
-                    if user.registrationType == "email":
-                        return Response({"response": "already_email"})
-
-                    response = {
-                        "id": user.id,
-                        "email": email,
-                        "name": user.name,
-                        "token": "",
-                        "registrationType": user.registrationType,
-                    }
-                    return Response(response, status=status.HTTP_200_OK)
-                else:
-                    # create user and save it to the database
-                    saveUser(email, "", id_info["name"], registrationType)
-            except:
-                return Response({"response": "token"})
-        else:
-            # get email and password
-            email = serializer.validated_data.get("email", "")
-            password = serializer.validated_data["password"]
-
-            # control if there is a user with given email
-            try:
-                user = User.objects.get(email=email)
-
-                if user.registrationType == "google":
-                    # if user already registered with google
-                    return Response({"response": "already_google"})
-
-            except User.DoesNotExist:
-                # if there is no user with given id
-                return Response({"response": "no_user"})
-            except:
-                # unknown error
-                return Response({"response": "error"})
+        except User.DoesNotExist:
+            # if there is no user with given id
+            return Response({"response": "no_user"})
+        except:
+            # unknown error
+            return Response({"response": "error"})
 
         # authenticate user
         authUser = authenticate(request, email=email, password=password)
@@ -99,6 +64,47 @@ def login(request):
         else:
             # if user's password is false
             return Response({"response": "password"})
+
+    # unknown error
+    return Response({"response": "error"})
+
+
+@api_view(["POST"])
+def signInWithGoogle(request):
+    serializer = UserSerializer(data=request.data)
+
+    # if taken data is valid
+    if serializer.is_valid():
+        token = serializer.validated_data["password"]
+        # control if token is correct
+        try:
+            # get user information from google
+            id_info = id_token.verify_oauth2_token(
+                token, google_requests.Request(), GOOGLE_CLIENT_ID
+            )
+            email = id_info["email"]
+
+            # control if there is a user with given email, if not create
+            if User.objects.filter(email=email).exists():
+                user = User.objects.get(email=email)
+
+                # if user already registered with email
+                if user.registrationType == "email":
+                    return Response({"response": "already_email"})
+
+                response = {
+                    "id": user.id,
+                    "email": email,
+                    "name": user.name,
+                    "token": "",
+                    "registrationType": user.registrationType,
+                }
+                return Response(response, status=status.HTTP_200_OK)
+            else:
+                # create user and save it to the database
+                saveUser(email, "", id_info["name"], "google")
+        except:
+            return Response({"response": "token"})
 
     # unknown error
     return Response({"response": "error"})
