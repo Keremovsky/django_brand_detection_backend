@@ -1,7 +1,31 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from ..serializers import HistoryIdSerializer
+from ..serializers import HistoryIdSerializer, HistorySerializer
 from ..models import User, HistoryModel
+
+
+@api_view(["GET"])
+def getAllHistory(request, id):
+    try:
+        user = User.objects.get(id=id)
+        allHistory = HistoryModel.objects.filter(user=user)
+
+        # control if user that request delete is the user that owns history item
+        if allHistory.user != user:
+            return Response({"response": "no_access"})
+
+        serializer = HistorySerializer(allHistory, many=True)
+
+        return Response({"histories": serializer.data})
+    except User.DoesNotExist:
+        # if there is no user with given id
+        return Response({"response": "no_user"})
+    except HistoryModel.DoesNotExist:
+        # if there is no history item with given id
+        return Response({"response": "no_history"})
+    except:
+        # unknown error
+        return Response({"response": "error"})
 
 
 @api_view(["DELETE"])

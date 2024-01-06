@@ -63,11 +63,11 @@ def getAllFeedback(request, id):
             return Response({"response": "no_feedback"})
 
         # get all histories that has feedback
-        response = []
+        feedback = []
         for feedback in feedbacks:
             history = feedback.history
             description = feedback.description
-            response.append(
+            feedback.append(
                 {
                     "id": history.id,
                     "date": history.date,
@@ -78,7 +78,7 @@ def getAllFeedback(request, id):
                 }
             )
 
-        return Response(response)
+        return Response(feedback)
     except User.DoesNotExist:
         # if there is no user with given id
         return Response({"response": "no_user"})

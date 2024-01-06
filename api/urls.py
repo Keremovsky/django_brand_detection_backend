@@ -26,6 +26,7 @@ urlpatterns = [
     # history views
     path("delete-history/<str:id>/", history_views.deleteHistory),
     path("handle-save-history/<str:id>/", history_views.handleSaveHistory),
+    path("get-all-history/<str:id>/", history_views.getAllHistory),
     # search views
     path("search/<str:id>", search_views.search),
 ]
