@@ -2,6 +2,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.conf import settings
+from django.core.mail import send_mail
 from ..models import User, RequestModel
 from ..serializers import RequestSerializer
 from ..utils import saveRequest
@@ -20,14 +22,24 @@ def createRequest(request, id):
             # create request and save it to the database
             saveRequest(user, serializer.validated_data)
 
+            # send mail to user email to notify user
+            title = "İstek Oluşturuldu"
+            message = "İsteğiniz başarıyla oluşturuldu, en yakın zamanda incelenerek işleme alınacaktır."
+            from_email = settings.EMAIL_HOST_USER
+            sent_to = [user.email]
+            send_mail(
+                title,
+                message,
+                from_email,
+                sent_to,
+                fail_silently=False,
+            )
             return Response({"response": "success"}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({"response": "no_user"})
         except:
             # unknown error
             return Response({"response": "error"})
-    else:
-        print(serializer.errors)
 
     # unknown error
     return Response({"response": "error"})
