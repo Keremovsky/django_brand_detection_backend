@@ -3,11 +3,17 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 from rest_framework import status
 import base64
-from blip_image_embeddings.pipeline import PreTrainedPipeline
 from ..models import User
-from ..utils import saveHistory
+from ..utils.utils import saveHistory, getVectorWithHug
+from ..utils.vector_database_client import VectorDatabaseClient
+from secret import HF_TOKEN, ENDPOINT_URL
 
-# client = QdrantClient()
+# initialize client
+client = VectorDatabaseClient(
+    collectionName="brand_collection",
+    size=1024,
+    alwaysRam=False,
+)
 # model = PreTrainedPipeline(path="blip_image_embeddings/")
 
 
@@ -20,21 +26,22 @@ def search(request, id):
             imageContent = image.read()
 
             # embed image and get vector
-            # b64Image = base64.b64encode(imageContent).decode("utf-8")
-            # result = model.__call__(data={"inputs": b64Image})
-            # vector = result["feature_vector"]
-            # print(vector)
+            b64Image = base64.b64encode(imageContent).decode("utf-8")
+            vector = getVectorWithHug(b64Image)
             # search for image
-            # client.search(vector)
+            results = client.search(vector.json(), 5)
 
-            # control if user is authenticated
-            try:
-                user = User.objects.get(id=id)
-                saveHistory(user, imageContent, [1, 2, 3, 4, 5])
-            except User.DoesNotExist:
-                pass
+            if results[0] == True:
+                # control if user is authenticated
+                try:
+                    user = User.objects.get(id=id)
+                    saveHistory(user, imageContent, [data["id"] for data in results[1]])
+                except User.DoesNotExist:
+                    pass
 
-            return Response({"response": "success"}, status=status.HTTP_200_OK)
+                return Response({"results": results[1]}, status=status.HTTP_200_OK)
+            else:
+                return Response({"response": "search_error"})
         else:
             # if there is a problem about image
             return Response({"response": "image_error"})

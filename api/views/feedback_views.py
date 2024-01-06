@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from ..models import User, HistoryModel, FeedbackModel
 from ..serializers import FeedbackSerializer
-from ..utils import saveFeedback
+from ..utils.utils import saveFeedback
 
 
 @api_view(["POST"])
@@ -56,29 +56,32 @@ def getAllFeedback(request, id):
     try:
         # get user's feedbacks
         user = User.objects.get(id=id)
-        feedbacks = FeedbackModel.objects.filter(user=user)
+        feedbackModels = FeedbackModel.objects.filter(user=user)
 
-        if not feedbacks.exists():
+        if not feedbackModels.exists():
             # if there is no feedback with given id
             return Response({"response": "no_feedback"})
 
+        print(feedbackModels)
         # get all histories that has feedback
-        feedback = []
-        for feedback in feedbacks:
+        feedbacks = []
+        for feedback in feedbackModels:
             history = feedback.history
             description = feedback.description
-            feedback.append(
+            print(feedback)
+            feedbacks.append(
                 {
                     "id": history.id,
-                    "date": history.date,
-                    "image": history.image,
-                    "resultIds": history.resultIds,
+                    "date": history.date.isoformat(),
+                    "image": history.image.url,
+                    "resultIds": history.getResultIds(),
                     "isSaved": history.isSaved,
                     "description": description,
                 }
             )
+            print(feedbacks)
 
-        return Response(feedback)
+        return Response({"feedbacks": feedbacks})
     except User.DoesNotExist:
         # if there is no user with given id
         return Response({"response": "no_user"})

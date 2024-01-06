@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from ..models import User, RequestModel
 from ..serializers import RequestSerializer
-from ..utils import saveRequest
+from ..utils.utils import saveRequest
 
 
 @api_view(["POST"])

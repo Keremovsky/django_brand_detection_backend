@@ -1,0 +1,99 @@
+from typing import List
+from qdrant_client import QdrantClient
+from qdrant_client.http.models import (
+    Distance,
+    VectorParams,
+    PointStruct,
+    SearchRequest,
+    ScalarQuantization,
+    ScalarQuantizationConfig,
+    ScalarType,
+    ScoredPoint,
+)
+
+
+def formatData(points: List[ScoredPoint]):
+    formattedData = []
+    for point in points:
+        data = {
+            "id": point.id,
+            "name": point.payload["name"],
+            "location": point.payload["location"],
+            "description": point.payload["description"],
+            "web": point.payload["url"],
+            "twitter": point.payload["twitter_url"],
+            "image": f"/media/logo/{point.payload['file_name']}",
+            "similarity": ((point.score + 1) * 50),
+        }
+        formattedData.append(data)
+    return formattedData
+
+
+class VectorDatabaseClient:
+    def __init__(self, collectionName: str, size: int, alwaysRam: bool):
+        self.collection_name = collectionName
+        self.client = QdrantClient("localhost", port=6333)
+
+        # get all collections
+        createdCollections = self.client.get_collections().collections
+
+        # control if client has a collection with given name
+        for collection in createdCollections:
+            if collection.name == collectionName:
+                return
+
+        # if it doesn't have the collection create one
+        self.client.create_collection(
+            collection_name=collectionName,
+            vectors_config=VectorParams(size=size, distance=Distance.COSINE),
+            quantization_config=ScalarQuantization(
+                scalar=ScalarQuantizationConfig(
+                    type=ScalarType.INT8,
+                    quantile=0.99,
+                    always_ram=alwaysRam,
+                )
+            ),
+        )
+
+    # add vector to the database
+    def addVector(self, id: int, vector: List[float], payload: dict):
+        try:
+            self.client.upsert(
+                collection_name=self.collection_name,
+                points=[
+                    PointStruct(
+                        id=id,
+                        vector=vector,
+                        payload=payload,
+                    )
+                ],
+            )
+            return True
+        except:
+            return False
+
+    # get all payload data of given ids
+    def getVectorsWithId(self, ids: List[int]):
+        try:
+            result = self.client.retrieve(
+                collection_name=self.collection_name,
+                ids=ids,
+            )
+            data = formatData(result)
+            return True, data
+        except Exception as e:
+            return False, str(e)
+
+    # search one vector
+    def search(self, vector: List[float], limit: int):
+        try:
+            result = self.client.search(
+                collection_name=self.collection_name,
+                query_vector=vector,
+                limit=limit,
+            )
+            data = formatData(result)
+            return True, data
+        except Exception as e:
+            print(e)
+            return False, str(e)

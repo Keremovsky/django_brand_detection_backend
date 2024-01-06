@@ -1,7 +1,10 @@
+from qdrant_client import QdrantClient
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from ..serializers import HistoryIdSerializer, HistorySerializer
 from ..models import User, HistoryModel
+
+client = QdrantClient("localhost", port=6333)
 
 
 @api_view(["GET"])
@@ -14,9 +17,13 @@ def getAllHistory(request, id):
         if allHistory.user != user:
             return Response({"response": "no_access"})
 
-        serializer = HistorySerializer(allHistory, many=True)
+        for history in allHistory:
+            resultIds = history.getResultIds()
+            results = client.retrieve(collection_name="brand_collection", ids=resultIds)
+            print(results)
+            pass
 
-        return Response({"histories": serializer.data})
+        return Response({"histories": "success"})
     except User.DoesNotExist:
         # if there is no user with given id
         return Response({"response": "no_user"})

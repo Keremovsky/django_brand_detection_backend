@@ -17,7 +17,7 @@ from ..serializers import (
 )
 from ..tokens import password_reset_token_generator
 from ..models import User
-from ..utils import saveUser
+from ..utils.utils import saveUser
 from secret import GOOGLE_CLIENT_ID
 
 
@@ -44,11 +44,11 @@ def login(request):
             # if there is no user with given id
             return Response({"response": "no_user"})
         except:
-            # unknown error
             return Response({"response": "error"})
 
         # authenticate user
         authUser = authenticate(request, email=email, password=password)
+        print(authUser)
 
         # control if user authenticated
         if authUser:
