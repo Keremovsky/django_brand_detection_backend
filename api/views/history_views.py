@@ -28,7 +28,7 @@ def getAllHistory(request, id):
             results = client.getVectorsWithId(ids=resultIds)
             # if process was success
             if results[0] == True:
-                finalResult = formatHistory(history, results[1])
+                finalResult = formatHistory(history=history, result=results[1])
 
                 histories.append(finalResult)
             else:

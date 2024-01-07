@@ -6,7 +6,15 @@ from django.http import JsonResponse
 from django.core.mail import send_mail
 from ..models import User, HistoryModel, FeedbackModel
 from ..serializers import FeedbackSerializer
-from ..utils.utils import saveFeedback
+from ..utils.vector_database_client import VectorDatabaseClient
+from ..utils.utils import saveFeedback, formatHistory
+
+# initialize client
+client = VectorDatabaseClient(
+    collectionName="brand_collection",
+    size=1024,
+    alwaysRam=False,
+)
 
 
 @api_view(["POST"])
@@ -59,29 +67,36 @@ def getAllFeedback(request, id):
         user = User.objects.get(id=id)
         feedbackModels = FeedbackModel.objects.filter(user=user)
 
-        if not feedbackModels.exists():
-            # if there is no feedback with given id
-            return Response({"response": "no_feedback"})
-
-        print(feedbackModels)
-        # get all histories that has feedback
-        feedbacks = []
+        allHistory = []
         for feedback in feedbackModels:
-            history = feedback.history
-            description = feedback.description
-            feedbacks.append(
-                {
-                    "id": feedback.id,
-                    "historyId": history.id,
-                    "image": history.image.url,
-                    "date": feedback.date.strftime("%d/%m/%Y"),
-                    "description": description,
-                }
-            )
-        return JsonResponse({"feedbacks": feedbacks})
+            allHistory.append(feedback.history)
+
+        histories = []
+        i = 0
+        for history in allHistory:
+            # get result ids and get company data from qdrant
+            resultIds = history.getResultIds()
+            results = client.getVectorsWithId(ids=resultIds)
+            # if process was success
+            if results[0] == True:
+                finalResult = formatHistory(
+                    history=history,
+                    feedbackDescription=feedbackModels[i].description,
+                    result=results[1],
+                )
+                i += 1
+
+                print(finalResult)
+
+                histories.append(finalResult)
+            else:
+                return Response({"response": "history_error"})
+
+        return JsonResponse({"feedbacks": histories})
     except User.DoesNotExist:
         # if there is no user with given id
         return Response({"response": "no_user"})
-    except:
+    except Exception as e:
+        print(e)
         # unknown error
         return Response({"response": "error"})
