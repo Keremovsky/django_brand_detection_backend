@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import make_password
 from django.utils.http import urlsafe_base64_decode
+from django.http import JsonResponse
 from django.utils.encoding import force_str
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
@@ -60,7 +61,11 @@ def login(request):
                 "token": password.key,
                 "registrationType": authUser.registrationType,
             }
-            return Response(response, status=status.HTTP_200_OK)
+            return JsonResponse(
+                response,
+                status=status.HTTP_200_OK,
+                content_type="application/json; charset=utf-8",
+            )
         else:
             # if user's password is false
             return Response({"response": "password"})
@@ -99,10 +104,21 @@ def signInWithGoogle(request):
                     "token": "",
                     "registrationType": user.registrationType,
                 }
-                return Response(response, status=status.HTTP_200_OK)
+                return JsonResponse(response, status=status.HTTP_200_OK)
             else:
                 # create user and save it to the database
                 saveUser(email, "", id_info["name"], "google")
+
+                user = User.objects.get(email=email)
+                response = {
+                    "id": user.id,
+                    "email": email,
+                    "name": user.name,
+                    "token": "",
+                    "registrationType": user.registrationType,
+                }
+
+                return JsonResponse(response, status=status.HTTP_200_OK)
         except:
             return Response({"response": "token"})
 
@@ -169,7 +185,7 @@ def resetPasswordRequest(request):
             fail_silently=False,
         )
 
-        return Response({"response": str(user.id)}, status=status.HTTP_200_OK)
+        return JsonResponse({"response": str(user.id)}, status=status.HTTP_200_OK)
 
     # unknown error
     return Response({"response": "error"})
@@ -183,8 +199,8 @@ def resetPasswordConfirm(request, uidb64, token):
     if serializer.is_valid():
         # control if uidb64 is correct
         try:
-            uid = force_str(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(id=uid)
+            id = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(id=id)
         except User.DoesNotExist:
             # if there is no user with given id
             return Response({"response": "no_user"})

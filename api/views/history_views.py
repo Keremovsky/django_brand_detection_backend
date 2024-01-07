@@ -1,7 +1,7 @@
-from qdrant_client import QdrantClient
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from ..serializers import HistoryIdSerializer, HistorySerializer
+from django.http import JsonResponse
+from ..serializers import HistoryIdSerializer
 from ..models import User, HistoryModel
 from ..utils.vector_database_client import VectorDatabaseClient
 from ..utils.utils import formatHistory
@@ -34,7 +34,7 @@ def getAllHistory(request, id):
             else:
                 return Response({"response": "history_error"})
 
-        return Response({"histories": histories})
+        return JsonResponse({"histories": histories})
     except User.DoesNotExist:
         # if there is no user with given id
         return Response({"response": "no_user"})
@@ -46,15 +46,15 @@ def getAllHistory(request, id):
         return Response({"response": "error"})
 
 
-@api_view(["DELETE"])
+@api_view(["POST"])
 def deleteHistory(request, id):
-    serializer = HistoryIdSerializer(request.data)
+    serializer = HistoryIdSerializer(data=request.data)
 
     if serializer.is_valid():
         try:
             user = User.objects.get(id=id)
 
-            historyId = serializer.validated_data["id"]
+            historyId = int(serializer.validated_data["id"])
             history = HistoryModel.objects.get(id=historyId)
 
             # control if user that request delete is the user that owns history item
@@ -70,7 +70,7 @@ def deleteHistory(request, id):
         except HistoryModel.DoesNotExist:
             # if there is no history item with given id
             return Response({"response": "no_history"})
-        except:
+        except Exception as e:
             # unknown error
             return Response({"response": "error"})
 
@@ -78,15 +78,15 @@ def deleteHistory(request, id):
     return Response({"response": "error"})
 
 
-@api_view(["PUT"])
+@api_view(["POST"])
 def handleSaveHistory(request, id):
-    serializer = HistoryIdSerializer(request.data)
+    serializer = HistoryIdSerializer(data=request.data)
 
     if serializer.is_valid():
         try:
             user = User.objects.get(id=id)
 
-            historyId = serializer.validated_data["id"]
+            historyId = int(serializer.validated_data["id"])
             history = HistoryModel.objects.get(id=historyId)
 
             # control if user that request delete is the user that owns history item

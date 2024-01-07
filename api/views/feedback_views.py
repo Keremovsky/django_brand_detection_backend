@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.conf import settings
+from django.http import JsonResponse
 from django.core.mail import send_mail
 from ..models import User, HistoryModel, FeedbackModel
 from ..serializers import FeedbackSerializer
@@ -77,7 +78,7 @@ def getAllFeedback(request, id):
                     "description": description,
                 }
             )
-        return Response({"feedbacks": feedbacks})
+        return JsonResponse({"feedbacks": feedbacks})
     except User.DoesNotExist:
         # if there is no user with given id
         return Response({"response": "no_user"})

@@ -2,11 +2,11 @@ from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 from rest_framework import status
-import base64
+from django.http import JsonResponse
 from ..models import User
 from ..utils.utils import saveHistory, getVectorWithHug
 from ..utils.vector_database_client import VectorDatabaseClient
-from secret import HF_TOKEN, ENDPOINT_URL
+import base64
 
 # initialize client
 client = VectorDatabaseClient(
@@ -44,7 +44,7 @@ def search(request, id):
                 except User.DoesNotExist:
                     pass
 
-                return Response({"results": results[1]}, status=status.HTTP_200_OK)
+                return JsonResponse({"results": results[1]}, status=status.HTTP_200_OK)
             else:
                 return Response({"response": "search_error"})
         else:

@@ -4,11 +4,10 @@ from .models import RequestModel, HistoryModel
 
 # user serializer
 class UserSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
     email = serializers.EmailField(required=False)
     password = serializers.CharField(write_only=True)
-    name = serializers.CharField(read_only=True)
-    registrationType = serializers.CharField(write_only=True)
+    name = serializers.CharField(required=False)
+    registrationType = serializers.CharField(write_only=True, required=False)
 
 
 # serializers for password reset
@@ -34,7 +33,7 @@ class RequestSerializer(serializers.ModelSerializer):
 
 # history serializers
 class HistoryIdSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
+    id = serializers.CharField()
 
 
 class HistorySerializer(serializers.ModelSerializer):

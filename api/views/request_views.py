@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.conf import settings
+from django.http import JsonResponse
 from django.core.mail import send_mail
 from ..models import User, RequestModel
 from ..serializers import RequestSerializer
@@ -58,7 +59,7 @@ def getAllRequest(request, id):
 
         serializer = RequestSerializer(requests, many=True)
 
-        return Response({"requests": serializer.data})
+        return JsonResponse({"requests": serializer.data})
     except User.DoesNotExist:
         # if there is no user with given id
         return Response({"response": "no_user"})
