@@ -13,6 +13,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from ..serializers import (
     UserSerializer,
+    UserNameSerializer,
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer,
 )
@@ -61,6 +62,7 @@ def login(request):
                 "token": password.key,
                 "registrationType": authUser.registrationType,
             }
+            print(response)
             return JsonResponse(
                 response,
                 status=status.HTTP_200_OK,
@@ -217,6 +219,40 @@ def resetPasswordConfirm(request, uidb64, token):
             return Response({"response": "success"}, status=status.HTTP_200_OK)
         else:
             return Response({"response": "token"})
+
+    # unknown error
+    return Response({"response": "error"})
+
+
+@api_view(["POST"])
+def changeName(request, id):
+    serializer = UserNameSerializer(data=request.data)
+
+    if serializer.is_valid():
+        name = serializer.validated_data["name"]
+        try:
+            user = User.objects.get(id=id)
+            user.name = name
+
+            print(user.password)
+
+            user.save()
+
+            response = {
+                "id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "token": user.password,
+                "registrationType": user.registrationType,
+            }
+
+            return Response(response, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            # if there is no user with given id
+            return Response({"response": "no_user"})
+        except:
+            # unknown error
+            return Response({"response": "error"})
 
     # unknown error
     return Response({"response": "error"})

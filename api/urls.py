@@ -17,6 +17,7 @@ urlpatterns = [
         "reset-password-confirm/<str:uidb64>/<str:token>/",
         auth_views.resetPasswordConfirm,
     ),
+    path("change-name/<str:id>/", auth_views.changeName),
     # feedback views
     path("create-feedback/<str:id>/", feedback_views.createFeedback),
     path("get-all-feedback/<str:id>/", feedback_views.getAllFeedback),

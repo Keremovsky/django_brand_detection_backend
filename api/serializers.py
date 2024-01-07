@@ -10,6 +10,10 @@ class UserSerializer(serializers.Serializer):
     registrationType = serializers.CharField(write_only=True, required=False)
 
 
+class UserNameSerializer(serializers.Serializer):
+    name = serializers.CharField(required=True)
+
+
 # serializers for password reset
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
