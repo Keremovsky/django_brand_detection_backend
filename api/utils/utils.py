@@ -3,6 +3,7 @@ from api.models import User, HistoryModel, FeedbackModel, RequestModel
 from django.contrib.auth.hashers import make_password
 from django.core.files.base import ContentFile
 from secret import ENDPOINT_URL, HF_TOKEN
+from typing import Optional
 
 
 def saveUser(email: str, password: str, name: str, registrationType: str):
@@ -51,14 +52,17 @@ def getVectorWithHug(b64Image: str):
     return response
 
 
-def formatHistory(history: HistoryModel, feedbackDescription, result):
+def formatHistory(
+    history: HistoryModel,
+    result,
+    feedbackDescription: Optional[str] = None,
+):
     # get similarities from sqlite
     similarities = history.getSimilarities()
     # iterate taken data from qdrant and add other needed data
     i = 0
-    print(feedbackDescription)
     for res in result:
-        if feedbackDescription != None:
+        if feedbackDescription is not None:
             res["feedbackDescription"] = feedbackDescription
         res["id"] = history.id
         res["date"] = history.date.strftime("%d/%m/%Y")

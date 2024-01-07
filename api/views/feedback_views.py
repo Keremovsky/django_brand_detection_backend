@@ -86,8 +86,6 @@ def getAllFeedback(request, id):
                 )
                 i += 1
 
-                print(finalResult)
-
                 histories.append(finalResult)
             else:
                 return Response({"response": "history_error"})
