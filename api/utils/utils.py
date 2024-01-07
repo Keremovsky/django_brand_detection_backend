@@ -51,14 +51,14 @@ def getVectorWithHug(b64Image: str):
     return response
 
 
-def formatHistory(history, result):
+def formatHistory(history: HistoryModel, result):
     # get similarities from sqlite
     similarities = history.getSimilarities()
     # iterate taken data from qdrant and add other needed data
     i = 0
     for res in result:
-        res["id"] = history.pk
-        res["date"] = history.date
+        res["id"] = history.id
+        res["date"] = history.date.strftime("%d/%m/%Y")
         res["searchedImage"] = history.image.url
         res["isSaved"] = history.isSaved
         res["similarity"] = similarities[i]

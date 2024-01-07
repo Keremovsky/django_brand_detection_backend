@@ -68,19 +68,15 @@ def getAllFeedback(request, id):
         for feedback in feedbackModels:
             history = feedback.history
             description = feedback.description
-            print(feedback)
             feedbacks.append(
                 {
-                    "id": history.id,
-                    "date": history.date.isoformat(),
+                    "id": feedback.id,
+                    "historyId": history.id,
                     "image": history.image.url,
-                    "resultIds": history.getResultIds(),
-                    "isSaved": history.isSaved,
+                    "date": feedback.date.strftime("%d/%m/%Y"),
                     "description": description,
                 }
             )
-            print(feedbacks)
-
         return Response({"feedbacks": feedbacks})
     except User.DoesNotExist:
         # if there is no user with given id
