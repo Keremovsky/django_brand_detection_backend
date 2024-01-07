@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from ..serializers import HistoryIdSerializer, HistorySerializer
 from ..models import User, HistoryModel
 from ..utils.vector_database_client import VectorDatabaseClient
+from ..utils.utils import formatHistory
 
 # initialize client
 client = VectorDatabaseClient(
@@ -27,18 +28,9 @@ def getAllHistory(request, id):
             results = client.getVectorsWithId(ids=resultIds)
             # if process was success
             if results[0] == True:
-                # get similarities from sqlite
-                similarities = history.getSimilarities()
-                # iterate taken data from qdrant and add other needed data
-                i = 0
-                for res in results[1]:
-                    res["id"] = history.pk
-                    res["date"] = history.date
-                    res["searchedImage"] = history.image.url
-                    res["isSaved"] = history.isSaved
-                    res["similarity"] = similarities[i]
-                    i += 1
-                histories.append(results[1])
+                finalResult = formatHistory(history, results[1])
+
+                histories.append(finalResult)
             else:
                 return Response({"response": "history_error"})
 
