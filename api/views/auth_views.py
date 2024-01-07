@@ -174,6 +174,9 @@ def resetPasswordRequest(request):
         # create a token for password reset
         token = password_reset_token_generator.make_token(user)
 
+        if user.registrationType == "google":
+            return Response({"response": "google"})
+
         # send mail to user email
         title = "Şifre Yenileme"
         message = f"Şifre yenileme kodunuz: {token}"
