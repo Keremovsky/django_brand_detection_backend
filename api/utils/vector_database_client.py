@@ -75,6 +75,14 @@ class VectorDatabaseClient:
     # add vector to the database
     def addVector(self, id: int, vector: List[float], payload: dict):
         try:
+            result = self.client.search(
+                collection_name=self.collection_name,
+                query_vector=vector,
+                limit=1,
+            )
+            if(result[0].score > 0.96):
+                return False
+
             self.client.upsert(
                 collection_name=self.collection_name,
                 points=[
