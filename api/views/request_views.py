@@ -6,14 +6,14 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.core.mail import send_mail
 from ..models import User, RequestModel
-from ..serializers import RequestSerializer
+from ..serializers import OutputRequestSerializer, InputRequestSerializer
 from ..utils.utils import saveRequest
 
 
 @api_view(["POST"])
 @parser_classes([MultiPartParser, FormParser])
 def createRequest(request, id):
-    serializer = RequestSerializer(data=request.data)
+    serializer = InputRequestSerializer(data=request.data)
 
     # if taken data is valid
     if serializer.is_valid():
@@ -57,9 +57,8 @@ def getAllRequest(request, id):
             # if there is no request for given user
             return Response({"response": "no_request"})
 
-        serializer = RequestSerializer(requests, many=True)
+        serializer = OutputRequestSerializer(requests, many=True)
 
-        print(serializer.data)
         return JsonResponse({"requests": serializer.data})
     except User.DoesNotExist:
         # if there is no user with given id

@@ -62,7 +62,6 @@ def login(request):
                 "token": password.key,
                 "registrationType": authUser.registrationType,
             }
-            print(response)
             return JsonResponse(
                 response,
                 status=status.HTTP_200_OK,
