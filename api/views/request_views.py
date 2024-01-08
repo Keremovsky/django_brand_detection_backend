@@ -59,6 +59,7 @@ def getAllRequest(request, id):
 
         serializer = RequestSerializer(requests, many=True)
 
+        print(serializer.data)
         return JsonResponse({"requests": serializer.data})
     except User.DoesNotExist:
         # if there is no user with given id

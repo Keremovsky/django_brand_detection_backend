@@ -30,9 +30,11 @@ class FeedbackSerializer(serializers.Serializer):
 
 
 class RequestSerializer(serializers.ModelSerializer):
+    date = serializers.DateTimeField(format="%d/%m/%Y")
+
     class Meta:
         model = RequestModel
-        exclude = ["user", "date"]
+        exclude = ["user"]
 
 
 # history serializers
