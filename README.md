@@ -45,7 +45,7 @@ pip install -r requirements.txt
 
 ## Working Demo
 
-kerem buraya link atar mısın
+[Youtube Demo Video](https://youtube.com/shorts/mYDNG9ezYkA?si=oKN3qk-yP9nFdEgd)
 
 ## Extra featues made for the sake of it: 
 1. Feedback
